@@ -17,7 +17,7 @@ post '/' do
 end
 
 post '/reply' do
-  context = Cleverbot::Client.write params[:TranscriptionText], Marshal.load(session[:chat_context])
+  context = Cleverbot::Client.write params[:TranscriptionText], Marshal.load(session[:chat_context] || "\x04\b{\x00")
   session[:chat_context] = Marshal.dump context
   builder do |xml|
     xml.instruct!
