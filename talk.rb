@@ -17,13 +17,15 @@ post '/' do
 end
 
 post '/reply' do
+  puts session[:chat_context].to_s
   context = Cleverbot::Client.write params[:TranscriptionText], Marshal.load(session[:chat_context] || "\x04\b{\x00")
+  puts context
   session[:chat_context] = Marshal.dump context
   builder do |xml|
     xml.instruct!
     xml.Response do
-      xml.Say context[:message]
-      xml.Record(maxLength: 10, finishOnKey: '#', transcribeCallback: '.', playBeep: false)
+      xml.Say context['message']
+      xml.Record(maxLength: 10, finishOnKey: '#', transcribeCallback: '/reply', playBeep: false)
     end
   end
 end
