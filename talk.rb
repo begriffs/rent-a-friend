@@ -1,5 +1,14 @@
 require 'sinatra'
+require 'builder'
 
-get '/' do
-  "Hello World!"
+enable :sessions
+set :session_secret, ENV['SESSION_KEY']
+
+post '/' do
+  builder do |xml|
+    xml.instruct!
+    xml.Response do
+      xml.Say("Hello world")
+    end
+  end
 end
