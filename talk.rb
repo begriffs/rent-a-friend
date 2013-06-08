@@ -31,5 +31,5 @@ post '/transcribed' do
   settings.cache.set(call_sid + 'reply', context['message'])
 
   client = Twilio::REST::Client.new params['AccountSid'], ENV['TWILIO_AUTH']
-  client.account.calls.get(params['CallSid']).redirect_to request.base_url
+  client.account.calls.get(call_sid).redirect_to request.base_url
 end
