@@ -12,7 +12,14 @@ set :static_cache_control, [:public, max_age: 60 * 60 * 24 * 365]
 post '/' do
   Twilio::TwiML::Response.new do |r|
     r.Say settings.cache.get(params['CallSid'] + 'reply') || "Hello, I love you. Talk to me."
-    r.Record action: '/wait', maxLength: 10, timeout: 3, finishOnKey: '#', transcribeCallback: '/transcribed', playBeep: false
+    r.Redirect '/listen'
+  end.text
+end
+
+post '/listen' do
+  Twilio::TwiML::Response.new do |r|
+    r.Record action: '/wait', maxLength: 10, timeout: 2, transcribeCallback: '/transcribed', playBeep: false
+    r.Redirect '/listen' # retry the recording if the user doesn't speak
   end.text
 end
 
