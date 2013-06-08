@@ -25,7 +25,8 @@ end
 
 post '/wait' do
   Twilio::TwiML::Response.new do |r|
-    r.Play(request.base_url + '/wait.mp3', loop: 100)
+    r.Play(request.base_url + '/wait.mp3', loop: 2)
+    r.Redirect '/timeout'
   end.text
 end
 
@@ -41,4 +42,23 @@ post '/transcribed' do
 
   client = Twilio::REST::Client.new params['AccountSid'], ENV['TWILIO_AUTH']
   client.account.calls.get(call_sid).redirect_to request.base_url
+end
+
+post '/timeout' do
+  # Abort all in-progress transcriptions for this call so they
+  # don't finish later and asynchronously interrupt the caller
+  client = Twilio::REST::Client.new params['AccountSid'], ENV['TWILIO_AUTH']
+  in_progress = client.account.transcriptions.list.select { |trans| trans.status == 'in-progress' }
+  in_progress.each do |trans|
+    recording = client.account.recordings.get(trans.recording_sid)
+    trans.delete if recording.call_sid == params['CallSid']
+  end
+
+  settings.cache.set(
+    params['CallSid'] + 'reply',
+    "I have #{in_progress.length} on my mind, can you repeat that?"
+  )
+  Twilio::TwiML::Response.new do |r|
+    r.Redirect '/'
+  end.text
 end
