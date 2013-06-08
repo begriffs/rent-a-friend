@@ -6,6 +6,8 @@ require 'memcachier'
 
 set :cache, Dalli::Client.new
 set :public_folder, 'public'
+# Go easy on Twilio's bandwidth, allow them to cache the hold-music mp3
+set :static_cache_control, [:public, max_age: 60 * 60 * 24 * 365]
 
 post '/' do
   Twilio::TwiML::Response.new do |r|
