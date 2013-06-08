@@ -10,5 +10,6 @@ artificial emotions are always there for you.
 Deploy this app to Heroku:
 
     heroku create
-    heroku config:add SESSION_KEY=`head -c 32 /dev/random | base64`
+    heroku config:add TWILIO_AUTH=xyz
+    heroku addons:add memcachier:dev
     git push heroku master

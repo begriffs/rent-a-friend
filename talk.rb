@@ -1,21 +1,21 @@
 require 'sinatra'
 require 'twilio-ruby'
 require 'cleverbot'
+require 'dalli'
+require 'memcachier'
 
-use Rack::Session::Cookie, :path => '/', :expire_after => 2592000, :secret => ENV['SESSION_KEY']
-
+set :cache, Dalli::Client.new
 set :public_folder, 'public'
 
 post '/' do
-  session['ChatContext'] ||= Marshal.dump Hash.new
+  call_sid      = params['CallSid']
+  context       = Marshal.load(settings.cache.get(call_sid + 'chat') || Marshal.dump(Hash.new))
+  transcription = settings.cache.get(call_sid + 'transcription')
 
-  if session['TranscriptionText']
-    context = Cleverbot::Client.write(
-      session['TranscriptionText'],
-      Marshal.load(session['ChatContext'])
-    )
-    session['ChatContext']       = Marshal.dump context
-    session['TranscriptionText'] = ''
+  if transcription
+    context = Cleverbot::Client.write(transcription, context)
+    settings.cache.set(call_sid + 'chat', Marshal.dump(context))
+    settings.cache.set(call_sid + 'transcription', nil)
     response = context['message']
   else
     response = "Hello, I love you. Talk to me (I'll respond faster if you press pound after speaking)."
@@ -34,7 +34,7 @@ post '/wait' do
 end
 
 post '/transcribed' do
-  session['TranscriptionText'] = params['TranscriptionText']
+  settings.cache.set(params['CallSid'] + 'transcription', params['TranscriptionText'])
 
   client = Twilio::REST::Client.new params['AccountSid'], ENV['TWILIO_AUTH']
   client.account.calls.get(params['CallSid']).redirect_to request.base_url

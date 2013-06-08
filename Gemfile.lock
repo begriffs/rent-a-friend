@@ -4,11 +4,13 @@ GEM
     builder (3.2.2)
     cleverbot (0.1.1)
       httparty (~> 0.8.0)
+    dalli (2.6.4)
     httparty (0.8.3)
       multi_json (~> 1.0)
       multi_xml
     jwt (0.1.8)
       multi_json (>= 1.5)
+    memcachier (0.0.2)
     multi_json (1.7.6)
     multi_xml (0.5.4)
     rack (1.5.2)
@@ -29,5 +31,7 @@ PLATFORMS
 
 DEPENDENCIES
   cleverbot
+  dalli
+  memcachier
   sinatra
   twilio-ruby
