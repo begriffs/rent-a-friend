@@ -18,12 +18,12 @@ post '/' do
     settings.cache.set(call_sid + 'transcription', nil)
     response = context['message']
   else
-    response = "Hello, I love you. Talk to me (I'll respond faster if you press pound after speaking)."
+    response = "Hello, I love you. Talk to me."
   end
 
   Twilio::TwiML::Response.new do |r|
     r.Say response
-    r.Record action: '/wait', maxLength: 10, finishOnKey: '#', transcribeCallback: '/transcribed', playBeep: false
+    r.Record action: '/wait', maxLength: 10, timeout: 3, finishOnKey: '#', transcribeCallback: '/transcribed', playBeep: false
   end.text
 end
 
